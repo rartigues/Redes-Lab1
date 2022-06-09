@@ -82,7 +82,6 @@ def recvFile(Emo):
     print(f"[Estado del Archivo] Archivo creado exitosamente.")
 
 def sendFile(client):
-    print(f"[Nueva conexion] {ADDR[0]} se ha conectado.")
     fileDir=askopenfilename(initialdir="~")
     filedirarray = fileDir.split("/")
     filename = filedirarray[len(filedirarray)-1]
