@@ -31,8 +31,14 @@ class RecieveService:
                 parts += 1
                 # progressBarr(parts/file_size*100)
                 file_temp.append(data)
+
             print("[CLIENT] Archivo recibido.")
-            file.write(self._encryptionService.decrypt("client", key,b"".join(file_temp)))
+            if file_size > 1*1024*1024*1024:
+                print("[CLIENT] El archivo es muy grande para ser enviado!!! **BETA**")
+                data = b''.join(file_temp)
+                file.write(self._encryptionService.largeFileDecrypt("client", data, key))
+            else:
+                file.write(self._encryptionService.decrypt("client", key,b"".join(file_temp)))
 
         file_location = os.getcwd()
         shutil.move(file_location+"/"+file_name,file_location+"/download/")

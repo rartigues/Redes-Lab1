@@ -21,9 +21,10 @@ class SendService:
         self._clearService.clear()
 
         # if file_size > 2.1GB split file
-        if file_size > 2.1*1024*1024*1024:
-            print("[SERVER] El archivo es muy grande para ser enviado.")
-            return
+        bigFile = False
+        if file_size > 1*1024*1024*1024:
+            print("[SERVER] El archivo es muy grande para ser enviado!!! **BETA**")
+            bigFile = True
 
 
         # Enviando el nombre del archivo
@@ -38,7 +39,10 @@ class SendService:
         self._encryptionService.openKeypair("server")
         with open(file_path, "rb") as file:
             data = file.read()
-            data, key = self._encryptionService.encrypt("server", data)
+            if(bigFile):
+                data, key = self._encryptionService.largeFileEncrypt("server", data)
+            else:
+                data, key = self._encryptionService.encrypt("server", data)
             socket.send(key)
             socket.send(data)
             print("[SERVER] Archivo enviado.")

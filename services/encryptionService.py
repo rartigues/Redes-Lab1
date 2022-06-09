@@ -77,8 +77,8 @@ class EncryptionService:
                     key_file.read(),
                     backend=default_backend()
                 )
-            print(f"#Obtenidas llaves para {prefix}!")
-            self._clearService.clear()
+            # print(f"#Obtenidas llaves para {prefix}!")
+            # self._clearService.clear()
             return private_key, public_key
         else:
             return self.createKeypair(prefix)
@@ -87,7 +87,7 @@ class EncryptionService:
     def encrypt(self, prefix, data):
         public_key = self.openKeypair(prefix)[1]
         key = self.createAESKey()
-        # encrypted_data = base64.b64encode(self.encryptAES(key, data))
+        encrypted_data = base64.b64encode(self.encryptAES(key, data))
         encrypted_data = self.encryptAES(key, data)
         encrypted_key = base64.b64encode(public_key.encrypt(
             key,
@@ -126,3 +126,51 @@ class EncryptionService:
         data = AESGCM(key).decrypt(data[:12], data[12:], None)
         return data
 
+    def largeFileEncrypt(self, prefix, data):
+        # split data into chunks
+        chunks = [data[i:i+1073741824] for i in range(0, len(data), 1073741824)]
+        # encrypt each chunk
+        encrypted_chunks = []
+        encrypted_keys = []
+        for chunk in chunks:
+            print(f"#Encriptando chunk {chunks.index(chunk)} de {len(chunks)}")
+            encrypted_chunk, encrypted_key = self.encrypt(prefix, chunk)
+            encrypted_chunks.append(base64.b64decode(encrypted_chunk).decode())
+            encrypted_keys.append(base64.b64decode(encrypted_key).decode())
+        # join encrypted chunks
+        encrypted_data = ','.join(encrypted_chunks)
+        encrypted_keys = ','.join(encrypted_keys)
+
+
+        return base64.b64encode(encrypted_data), base64.b64encode(encrypted_keys)
+
+        # encrypted_data = ""
+        # for chunk in encrypted_chunks:
+        #     print(f"#Uniendo chunk {encrypted_chunks.index(chunk)+1} de {len(encrypted_chunks)}")
+        #     encrypted_data += base64.b64encode(chunk).decode("utf-8")
+        #     encrypted_data += ","
+        # encrypted_key = ""
+        # for key in encrypted_keys:
+        #     encrypted_key += base64.b64encode(key).decode("utf-8")
+        #     encrypted_key += ","
+        
+
+        return base64.b64encode(encrypted_data), base64.b64encode(encrypted_key)
+
+    def largeFileDecrypt(self, prefix, key, encrypted):
+        # split data into chunks
+        encrypted_chunks = encrypted.split(b',')
+        encrypted_keys = key.split(b',')
+        # decrypt each chunk
+        decrypted_chunks = []
+        for chunk, key in zip(encrypted_chunks, encrypted_keys):
+            print(f"#Desencriptando chunk {encrypted_chunks.index(chunk)+1} de {len(encrypted_chunks)}")
+            print(f"#DATA: {chunk}")
+            decrypted_chunks.append(self.decrypt(prefix, key, chunk))
+        # join decrypted chunks
+        decrypted_data = b''
+        for chunk in decrypted_chunks:
+            decrypted_data += chunk
+        return decrypted_data
+
+        

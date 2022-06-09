@@ -4,7 +4,7 @@ from time import sleep
 class ClearService:
     def clear(self):
         
-        sleep(1.7)
+        sleep(0.1)
         if name == 'nt':
             # _ = system('cls')
             next
