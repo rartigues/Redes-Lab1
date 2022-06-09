@@ -123,44 +123,5 @@ def main():
             sys.exit()
     return 0
 
-
-
-
-
-
-
-
-    # Inicializando el TCP socket
-    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    
-    # Bindeamos la ip y puerto al servidor
-    server.bind(ADDR)
-    
-    # Server esta esperando para que el cliente se conecte
-    server.listen()
-    
-    print("[Esperando conexion...] El server esta esperando conexion.")
-
-    while True:
-        # El server ha aceptado la conexion del cliente
-        Emo,addr = server.accept()
-        type(Emo)
-
-        #si se quiere hacer algo tiene que ser desde aca
-        Emo.send("[SERVER] Que deseas hacer?\n[SERVER] 1-Enviar Archivo\n[SERVER] 2-Recibir Archivo".base64.b64encode(FORMAT))
-
-        answer=Emo.recv(SIZE).base64.b64decode(FORMAT)
-        if(answer=="1"):
-            recvFile(Emo)
-        elif(answer=="2"):
-            sendFile(Emo)
-        else:
-            print("[SERVER] opcion no valida\n")
-
-
-        # Cerrando la conexion con el cliente 
-        Emo.close()
-        print(f"[Desconectado] {addr} se ha desconectado.")
-
 if __name__ == "__main__":
     main()
