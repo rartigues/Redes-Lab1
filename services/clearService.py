@@ -6,7 +6,8 @@ class ClearService:
         
         sleep(1.7)
         if name == 'nt':
-            _ = system('cls')
+            # _ = system('cls')
+            next
         else:
-            _ = system('clear')
-        
+            # _ = system('clear')
+            next
