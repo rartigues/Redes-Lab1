@@ -32,13 +32,11 @@ def recvFile(Emo):
     tqdm_bar=tqdm(total=int(size), unit="B", unit_scale=True, unit_divisor=SIZE)
     parts = []
     with open(name, "wb") as file:
-        while  True:
-            chunk = Emo.recv(int(size))
-            if not chunk:
-                break
-            parts.append(chunk)
-            tqdm_bar.update(len(chunk))
-            tqdm_bar.refresh()
+        #create a for that will receive the data by parts of SIZE
+        for i in range(0, int(size), SIZE):
+            part = Emo.recv(int(size))
+            parts.append(part)
+            tqdm_bar.update(len(part))
         file.write(b"".join(parts))
     tqdm_bar.close()
     file_location= os.getcwd()
@@ -70,7 +68,11 @@ def sendFile(client):
         print(msg)
 
         # Se envia la informacion del archivo al server
-        client.send(data)                               #5 SEND
+        #divide data in parts of SIZE
+        parts = [data[i:i+SIZE] for i in range(0, len(data), SIZE)]
+        for part in tqdm(parts):
+            client.send(part, SIZE)
+        print(f"[Estado del Archivo] Archivo enviado exitosamente.")
         # Cerrando el archivo
         file.close()
 
