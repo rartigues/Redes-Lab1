@@ -128,8 +128,8 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-./saves/*
-
 saves/
-
 test.py
+keys/client/*
+keys/server/*
+download/*
