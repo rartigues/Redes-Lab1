@@ -63,10 +63,7 @@ def sendFile(client):
 
         # Se envia la informacion del archivo al server
         client.sendall(data)                               #6 SEND
-        
 
-        msg=client.recv(8192).decode(FORMAT)            #7 RECV
-        print(msg)
         # Cerrando el archivo
         file.close()
 
