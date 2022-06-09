@@ -4,12 +4,8 @@ import base64
 from tkinter.filedialog import askopenfilename
 import sys
 import shutil
-from dotenv import load_dotenv
-from cryptography.hazmat.primitives.asymmetric import rsa
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.asymmetric import padding
+from services.encryptionService import EncryptionService
+
 
 IP = socket.gethostbyname(socket.gethostname())
 PORT = 4455
@@ -48,26 +44,12 @@ def progressBarr(percent):
         sys.stdout.write("\n")
     sys.stdout.flush()  
 
-def createKeypair():
-    private_key = rsa.generate_private_key(
-        public_exponent=65537,
-        key_size=4096,
-        backend=default_backend()
-    )
-    public_key = private_key.public_key()
 
-    with open("private.pem", "wb") as f:
-        f.write(private_key.private_bytes(
-            encoding=serialization.Encoding.PEM,
-            format=serialization.PrivateFormat.TraditionalOpenSSL,
-            encryption_algorithm=serialization.NoEncryption()
-        ))
 
-#* 
-# https://cryptography.io/en/latest/hazmat/primitives/asymmetric/rsa/#generation
-# https://gist.github.com/gabrielfalcao/de82a468e62e73805c59af620904c124
-# 
-#*#
+
+
+
+
 
 def recvFile(Emo):
     print(f"[Nueva conexion] {ADDR[0]} se ha conectado.")
@@ -144,6 +126,9 @@ def sendFile(client):
         file.close()
 
 def main():
+    _encryptionService = EncryptionService()
+
+
     os.system('clear')
     print("[Iniciando] El server esta iniciando...")
     # Inicializando el TCP socket
