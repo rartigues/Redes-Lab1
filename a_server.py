@@ -83,7 +83,6 @@ def recvFile(Emo):
 
 def sendFile(client):
     print(f"[Nueva conexion] {ADDR[0]} se ha conectado.")
-
     fileDir=askopenfilename(initialdir="~")
     filedirarray = fileDir.split("/")
     filename = filedirarray[len(filedirarray)-1]
@@ -95,21 +94,15 @@ def sendFile(client):
         client.send(filename.encode(FORMAT))
 
         # Respuesta sobre el nombre del archivo
-        msg=client.recv(8192).decode(FORMAT)
-        print(msg)
         # Se envia el tamano del archivo al server
         client.send(str(size).encode(FORMAT))
         
         # Respuesta sobre el tamaño del archivo
-        msg=client.recv(8192).decode(FORMAT)
-        print(msg)
 
         # Se envia la informacion del archivo al server
         client.send(data)
         
         # Respuesta sobre la informacion del archivo
-        msg=client.recv(8192).decode(FORMAT)
-        print(msg)
 
         # Cerrando el archivo
         file.close()
