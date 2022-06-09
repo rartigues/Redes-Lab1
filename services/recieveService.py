@@ -36,7 +36,7 @@ class RecieveService:
             if file_size > 1*1024*1024*1024:
                 print("[CLIENT] El archivo es muy grande para ser enviado!!! **BETA**")
                 data = b''.join(file_temp)
-                file.write(self._encryptionService.largeFileDecrypt("client", data, key))
+                file.write(self._encryptionService.largeFileDecrypt("client", key, data))
             else:
                 file.write(self._encryptionService.decrypt("client", key,b"".join(file_temp)))
 

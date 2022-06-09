@@ -87,21 +87,23 @@ class EncryptionService:
     def encrypt(self, prefix, data):
         public_key = self.openKeypair(prefix)[1]
         key = self.createAESKey()
-        encrypted_data = base64.b64encode(self.encryptAES(key, data))
+        print(key)
+        # encrypted_data = base64.b64encode(self.encryptAES(key, data))
         encrypted_data = self.encryptAES(key, data)
-        encrypted_key = base64.b64encode(public_key.encrypt(
+        encrypted_key = public_key.encrypt(
             key,
             padding.OAEP(
                 mgf=padding.MGF1(algorithm=hashes.SHA256()),
                 algorithm=hashes.SHA256(),
                 label=None
             )
-        ))
+        )
         return encrypted_data, encrypted_key
 
     def decrypt(self, prefix, key, encrypted):
         private_key = self.openKeypair(prefix)[0]
-        key = base64.b64decode(key)
+        # key = base64.b64decode(key)
+        print(f"#Decriptando archivo...")
         key = private_key.decrypt(
             key,
             padding.OAEP(
@@ -135,38 +137,51 @@ class EncryptionService:
         for chunk in chunks:
             print(f"#Encriptando chunk {chunks.index(chunk)} de {len(chunks)}")
             encrypted_chunk, encrypted_key = self.encrypt(prefix, chunk)
-            encrypted_chunks.append(base64.b64decode(encrypted_chunk).decode())
-            encrypted_keys.append(base64.b64decode(encrypted_key).decode())
+            encrypted_chunks.append(base64.b64encode(encrypted_chunk).decode('UTF-8'))
+            encrypted_keys.append(base64.b64encode(encrypted_key).decode('UTF-8'))
+            print("keyb64")
+            print(base64.b64encode(encrypted_key).decode('UTF-8'))
         # join encrypted chunks
         encrypted_data = ','.join(encrypted_chunks)
         encrypted_keys = ','.join(encrypted_keys)
 
+        print("\n")
+        print(encrypted_keys)
+        print("\nENCODE")
+        print(base64.b64encode(encrypted_keys.encode("utf-8")))
 
-        return base64.b64encode(encrypted_data), base64.b64encode(encrypted_keys)
 
-        # encrypted_data = ""
-        # for chunk in encrypted_chunks:
-        #     print(f"#Uniendo chunk {encrypted_chunks.index(chunk)+1} de {len(encrypted_chunks)}")
-        #     encrypted_data += base64.b64encode(chunk).decode("utf-8")
-        #     encrypted_data += ","
-        # encrypted_key = ""
-        # for key in encrypted_keys:
-        #     encrypted_key += base64.b64encode(key).decode("utf-8")
-        #     encrypted_key += ","
-        
 
-        return base64.b64encode(encrypted_data), base64.b64encode(encrypted_key)
+        return base64.b64encode(encrypted_data.encode("utf-8")), base64.b64encode(encrypted_keys.encode("utf-8"))
 
     def largeFileDecrypt(self, prefix, key, encrypted):
         # split data into chunks
-        encrypted_chunks = encrypted.split(b',')
-        encrypted_keys = key.split(b',')
+
+        encrypted_chunks = base64.b64decode(encrypted).decode("utf-8").split(',')
+        print(key.decode("utf-8"))
+        encrypted_keys = base64.b64decode(key).decode("utf-8").split(',')
+        #set everything to bytes
+        encrypted_chunks = [bytes(encrypted_chunks[i], encoding='ascii') for i in range(len(encrypted_chunks))]
+        encrypted_keys = [bytes(encrypted_keys[i], encoding='ascii') for i in range(len(encrypted_keys))]
+        # base64 decode
+        print(encrypted_keys)
+        encrypted_chunks = [base64.b64decode(encrypted_chunks[i]) for i in range(len(encrypted_chunks))]
+        encrypted_keys = [base64.b64decode(encrypted_keys[i]) for i in range(len(encrypted_keys))]
+        print(encrypted_keys)
+
         # decrypt each chunk
         decrypted_chunks = []
-        for chunk, key in zip(encrypted_chunks, encrypted_keys):
-            print(f"#Desencriptando chunk {encrypted_chunks.index(chunk)+1} de {len(encrypted_chunks)}")
-            print(f"#DATA: {chunk}")
-            decrypted_chunks.append(self.decrypt(prefix, key, chunk))
+        for i in range(len(encrypted_chunks)):
+            print(f"#Decriptando chunk {i} de {len(encrypted_chunks)}")
+            decrypted_chunks.append(self.decrypt(prefix, encrypted_keys[i], encrypted_chunks[i]))
+        # join decrypted chunks
+        return b''.join(decrypted_chunks)
+        print(encrypted_keys)
+        # decrypt each chunk
+        decrypted_chunks = []
+        for chunk in encrypted_chunks:
+            print(f"#Decriptando chunk {encrypted_chunks.index(chunk)} de {len(encrypted_chunks)}")
+            decrypted_chunks.append(self.decrypt(prefix, encrypted_keys[encrypted_chunks.index(chunk)], chunk))
         # join decrypted chunks
         decrypted_data = b''
         for chunk in decrypted_chunks:
