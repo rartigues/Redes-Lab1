@@ -4,6 +4,9 @@ import base64
 from tkinter.filedialog import askopenfilename
 import sys
 import shutil
+import argparse
+
+
 
 IP = socket.gethostbyname(socket.gethostname())
 PORT = 4455
@@ -39,44 +42,34 @@ def progressBarr(percent):
     if(percent==100):
         sys.stdout.write("\n")
     sys.stdout.flush()  
-
 def recvFile(Emo):
-    print(f"[Nueva conexion] {ADDR[0]} se ha conectado.")
-
+    os.system('clear')
     # Recibiendo el nombre del archivo del cliente
     # Recibiendo el tamaño del archivo
 
-    name = Emo.recv(8192).decode(FORMAT)                                    # 1 RECV
-    Emo.send("[SERVER] Nombre del archivo recibido.\n".encode(FORMAT))      # 2 SEND
-    size = Emo.recv(8192).decode(FORMAT)                                    # 3 RECV
-    Emo.send("[SERVER] Tamaño del archivo recibido.\n".encode(FORMAT))      # 4 SEND
+    name = Emo.recv(8192).decode(FORMAT)
+    size = Emo.recv(8192).decode(FORMAT)
 
     print(f"[RECV] Nombre del archivo = {name}")
     print(f"[RECV] Tamaño del archivo = {size} bytes")
 
-    #total de repeticiones a ralizar
     repeticiones = int((int(size) / 8192)+1)
-    porcentaje=0
+
+
     # Recibindo la informacion del archivo del cliente
     parts = []
-    
     with open(name, "wb") as file:
         while True:
-            data = Emo.recv(8192)       # 6 RECV
-            progressBarr(len(parts)/repeticiones*100)                                    
-            if not data:
+            chunk = Emo.recv(int(size))
+            if not chunk:
                 break
-            parts.append(data)
-            
-
+            parts.append(chunk)
+            progressBarr(len(parts)/repeticiones*100)
         file.write(b"".join(parts))
-
-    Emo.sendall("[SERVER] Archivo recibido.\n".encode(FORMAT))
-
-    file_location= os.getcwd()
-
-    shutil.move(file_location+"/"+name,file_location+"/saves/")
         
+    file_location= os.getcwd()
+    shutil.move(file_location+"/"+name,file_location+"/saves/")
+
     # Cerrando el Archivo
     file.close()
     print(f"[Estado del Archivo] Archivo creado exitosamente.")
@@ -107,9 +100,58 @@ def sendFile(client):
         # Cerrando el archivo
         file.close()
 
+def SendFunction():
+    #create a socket that waits for a connection
+
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.bind(ADDR)
+            #make it listen until a connection is made
+            s.listen()
+            #accept the connection
+            client, addr = s.accept()
+            print(f"[Nueva conexion] {addr[0]} se ha conectado.")
+            sendFile(client)
+    
+
+    
+    
+def RecvFunction():
+    #create a socket that joins a connection
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        connected=False
+        while not connected:
+            try:
+                s.connect(ADDR)
+                connected=True
+            except:
+                connected=False
+        print("se logro la conexion digo yo cliente")
+        recvFile(s)
+
 def main():
-    os.system('clear')
-    print("[Iniciando] El server esta iniciando...")
+    if(len(sys.argv)>2):
+        print("[ERROR] El numero de argumentos es incorrecto.")
+        sys.exit()
+    elif(len(sys.argv)<2):
+        print("[ERROR] No se ha ingresado ningun argumento.")
+        sys.exit()
+    elif(len(sys.argv)==2):
+        if(sys.argv[1]=="-s"):
+            SendFunction()
+        elif(sys.argv[1]=="-r"):
+            RecvFunction()
+        else:
+            print("[ERROR] Argumento incorrecto.")
+            sys.exit()
+    return 0
+
+
+
+
+
+
+
+
     # Inicializando el TCP socket
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     
