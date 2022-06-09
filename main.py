@@ -5,7 +5,7 @@ from tkinter.filedialog import askopenfilename
 import sys
 import shutil
 import argparse
-
+import tqdm
 
 
 IP = socket.gethostbyname(socket.gethostname())
@@ -47,26 +47,27 @@ def recvFile(Emo):
     # Recibiendo el nombre del archivo del cliente
     # Recibiendo el tamaño del archivo
 
-    name = Emo.recv(8192).decode(FORMAT)
-    size = Emo.recv(8192).decode(FORMAT)
+    name = str(Emo.recv(8192).decode(FORMAT))
+    size = str(Emo.recv(8192).decode(FORMAT))
 
     print(f"[RECV] Nombre del archivo = {name}")
     print(f"[RECV] Tamaño del archivo = {size} bytes")
 
-    repeticiones = int((int(size) / 8192)+1)
-
+    repeticiones = int((float(size) / 8192)+1)
 
     # Recibindo la informacion del archivo del cliente
     parts = []
+    percentage=tqdm.tqdm(total=repeticiones)
     with open(name, "wb") as file:
         while True:
             chunk = Emo.recv(int(size))
             if not chunk:
                 break
             parts.append(chunk)
-            progressBarr(len(parts)/repeticiones*100)
+            percentage.update(1)            
+            #progressBarr(len(parts)/repeticiones*100)
         file.write(b"".join(parts))
-        
+    percentage.close()
     file_location= os.getcwd()
     shutil.move(file_location+"/"+name,file_location+"/saves/")
 
