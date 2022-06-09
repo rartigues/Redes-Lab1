@@ -53,6 +53,9 @@ def sendFile(client):
     with open(fileDir,"rb") as file:            
         data = file.read()
         size = file.seek(0, os.SEEK_END)
+        #print the filename and size of the file
+        print(f"[SEND] Nombre del archivo = {filename}")
+        print(f"[SEND] Tamaño del archivo = {size} bytes")
 
         # Se envia el nombre del archivo al server
         client.send(filename.encode(FORMAT))            #1 SEND
