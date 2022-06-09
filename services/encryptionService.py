@@ -87,7 +87,8 @@ class EncryptionService:
     def encrypt(self, prefix, data):
         public_key = self.openKeypair(prefix)[1]
         key = self.createAESKey()
-        encrypted_data = base64.b64encode(self.encryptAES(key, data))
+        # encrypted_data = base64.b64encode(self.encryptAES(key, data))
+        encrypted_data = self.encryptAES(key, data)
         encrypted_key = base64.b64encode(public_key.encrypt(
             key,
             padding.OAEP(
@@ -118,11 +119,10 @@ class EncryptionService:
 
     def encryptAES(self, key, data):
         nonce = secrets.token_bytes(12)
-        data = nonce + AESGCM(key).encrypt(nonce, data, b'')
+        data = nonce + AESGCM(key).encrypt(nonce, data, None)
         return data
 
     def decryptAES(self, key, data):
-        data = base64.b64decode(data)
-        data = AESGCM(key).decrypt(data[:12], data[12:], b'')
+        data = AESGCM(key).decrypt(data[:12], data[12:], None)
         return data
 

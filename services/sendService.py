@@ -1,3 +1,4 @@
+import base64
 from services.encryptionService import EncryptionService
 from services.clearService import ClearService
 from configuration.Settings import Settings
@@ -18,6 +19,12 @@ class SendService:
         file_size = os.path.getsize(file_path)
         print(f"Se selecciono el archivo {file_name} de {file_size} bytes.")
         self._clearService.clear()
+
+        # if file_size > 2.1GB split file
+        if file_size > 2.1*1024*1024*1024:
+            print("[SERVER] El archivo es muy grande para ser enviado.")
+            return
+
 
         # Enviando el nombre del archivo
         socket.send(file_name.encode(self._settings.FORMAT))
