@@ -84,11 +84,11 @@ class EncryptionService:
             return self.createKeypair(prefix)
 
 
-    def encrypt(self, prefix, data, key=None):
+    def encrypt(self, prefix, data, key = None, onlyKey = False):
         public_key = self.openKeypair(prefix)[1]
         if (key == None ): key = self.createAESKey()
-        # encrypted_data = base64.b64encode(self.encryptAES(key, data))
-        encrypted_data = self.encryptAES(key, data)
+        if (onlyKey): encrypted_data = None
+        else: encrypted_data = self.encryptAES(key, data)
         encrypted_key = public_key.encrypt(
             key,
             padding.OAEP(
@@ -118,7 +118,6 @@ class EncryptionService:
 
 
 
-#################! TEST !####################
 
     def createAESKey(self):
         key = AESGCM.generate_key(256)
@@ -132,6 +131,8 @@ class EncryptionService:
     def decryptAES(self, key, data):
         data = AESGCM(key).decrypt(data[:12], data[12:], b'')
         return data
+
+#################! TEST !####################
 
     def largeFileEncrypt(self, prefix, data):
         # split data into chunks
