@@ -5,6 +5,8 @@ from configuration.Settings import Settings
 import os
 import tkinter
 from tkinter import filedialog
+from tqdm import tqdm
+
 
 class SendService:
     _encryptionService = EncryptionService()
@@ -40,13 +42,15 @@ class SendService:
         self._encryptionService.openKeypair("server")
         with open(file_path, "rb") as file:
             data = file.read()
+            parts= [data[i:i+self._settings.BUFFER_SIZE] for i in range(0, len(data), self._settings.BUFFER_SIZE)]
             if(bigFile):
                 next
                 # data, key = self._encryptionService.largeFileEncrypt("server", data)
             else:
                 data, key = self._encryptionService.encrypt("server", data)
             socket.send(key)
-            socket.send(data)
+            for parts in tqdm(parts):
+                socket.send(parts)
             print("[SERVER] Archivo enviado.")
         file.close()
 
