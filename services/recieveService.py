@@ -38,7 +38,7 @@ class RecieveService:
 
             print("[CLIENT] Archivo recibido.")
             tqdm_bar.close()
-            if file_size > 1*1024*1024*1024:
+            if file_size > 2.1*1024*1024*1024:
                 print("[CLIENT] El archivo es muy grande para ser enviado!!! **BETA**")
                 return
                 #data = b''.join(file_temp)
