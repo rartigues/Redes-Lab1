@@ -17,6 +17,10 @@ class SendService:
         print("[STATUS] Esperando seleccion de archivo...")
         tkinter.Tk().withdraw()
         file_path = filedialog.askopenfilename()
+        if(file_path == ""):
+            socket.send("///cancelado!///".encode(self._settings.FORMAT))
+            print("[STATUS] *Cancelado*")
+            return
         file_name = os.path.basename(file_path)
         file_size = os.path.getsize(file_path)
         print(f"Se selecciono el archivo {file_name} de {file_size} bytes.")

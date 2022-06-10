@@ -14,6 +14,9 @@ class RecieveService:
     def recieve(self, socket):
         print("[STATUS] Esperando seleccion de archivo...")
         file_name = socket.recv(self.BUFFER_SIZE).decode(self._settings.FORMAT)
+        if file_name == "///cancelado!///":
+            print("[SERVER] *Cancelado*")
+            return
         file_size = int(socket.recv(self.BUFFER_SIZE).decode(self._settings.FORMAT))
         print(f"\n[CLIENT] Se recibira el archivo {file_name} de {file_size} bytes.")
         encrypted_key = socket.recv(self.BUFFER_SIZE)
