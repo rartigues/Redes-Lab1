@@ -62,6 +62,7 @@ class SendService:
                 # socket.send(str(len(encrypted_part_size)).encode(self._settings.FORMAT)) # Con archivos muy grande puede fallar sin esto
                 socket.send(encrypted_part_size)
                 socket.send(encrypted_part)
+            socket.send(b'listoenviada')
             print("[SERVER] Archivo enviado.")
         file.close()
 

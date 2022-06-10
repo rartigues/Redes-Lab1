@@ -4,6 +4,7 @@ from configuration.Settings import Settings
 import os
 import shutil
 from tqdm import tqdm
+import time
 
 class RecieveService:
     _encryptionService = EncryptionService()
@@ -19,8 +20,10 @@ class RecieveService:
         encrypted_key = socket.recv(self.BUFFER_SIZE)
         if encrypted_key == b'//!publickey':
             print("[CLIENT] Se solicita la public key del cliente...")
-            self._encryptionService.createKeypair("client")
+            self._encryptionService.createKeypair("client", True)
+            print("[STATUS] Esperando key encriptada...")
             encrypted_key = socket.recv(self.BUFFER_SIZE)
+        print("[STATUS] Key encriptada recibida.")
 
 
 
@@ -39,7 +42,12 @@ class RecieveService:
             # encrypted_part_size_size = socket.recv(self.BUFFER_SIZE)
             # print(encrypted_part_size_size)
             # encrypted_part_size_size = int(encrypted_part_size_size.decode(self._settings.FORMAT))
-            encrypted_part_size = int(socket.recv(self.BUFFER_SIZE).decode(self._settings.FORMAT))
+            encrypted_part_size = (socket.recv(self.BUFFER_SIZE))
+            if (encrypted_part_size == b'listoenviada'):
+                print("****[ERROR] Error de ram - Probablemente archivo recibido corrupto****\n")
+                time.sleep(5)
+                break
+            encrypted_part_size = int(encrypted_part_size.decode(self._settings.FORMAT))
             while True:
                 encrypted_part = socket.recv(encrypted_part_size)
                 if encrypted_part_size == len(encrypted_part):

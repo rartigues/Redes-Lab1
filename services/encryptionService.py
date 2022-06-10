@@ -19,7 +19,7 @@ class EncryptionService:
     clientPublicKey = None
     clientPrivateKey = None
 
-    def createKeypair(self, prefix: str):
+    def createKeypair(self, prefix: str, onlyCreate = False):
         if (prefix== "client"): prefix2 = "server"
         else: prefix2 = "client"
 
@@ -63,6 +63,7 @@ class EncryptionService:
         time.sleep(10)
         print("\n\n\n\n\n\n\n\n")
 
+        if (onlyCreate == True): return
         return self.openKeypair(prefix)
 
     def openKeypair(self, prefix: str):
