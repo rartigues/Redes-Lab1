@@ -12,60 +12,48 @@ class SendService:
     _encryptionService = EncryptionService()
     _clearService = ClearService()
     _settings = Settings()
-    BUFFER_SIZE = 1024
 
     def send(self, socket):
-        # Seleccionar archivo para enviar
+        print("[STATUS] Esperando seleccion de archivo...")
         tkinter.Tk().withdraw()
         file_path = filedialog.askopenfilename()
         file_name = os.path.basename(file_path)
         file_size = os.path.getsize(file_path)
         print(f"Se selecciono el archivo {file_name} de {file_size} bytes.")
-        self._clearService.clear()
-
-        # if file_size > 2.1GB split file
-        bigFile = False
-        if file_size > 2.1*1024*1024*1024:
-            print("[SERVER] El archivo es muy grande para ser enviado!!!!")
-            return
-            # bigFile = True
 
 
-        # Enviando el nombre del archivo
         socket.send(file_name.encode(self._settings.FORMAT))
-        print("[SERVER] Nombre del archivo enviado.")
-
-        # Enviando el tamaño del archivo
+        print("\n[SERVER] Nombre del archivo enviado.")
         socket.send(str(file_size).encode(self._settings.FORMAT))
         print("[SERVER] Tamaño del archivo enviado.")
 
         # Enviando el archivo
-        self._encryptionService.openKeypair("server")
         key = self._encryptionService.createAESKey()
-        encrypted_key = self._encryptionService.encrypt("server", None, key, True)[1]
+        encrypted_key = self._encryptionService.encrypt("server", None, key, True) # Solo retorna el key encriptado
         socket.send(encrypted_key)
+        print("[SERVER] Key encriptada enviada.")
         with open(file_path, "rb") as file:
+            print("\n[STATUS] Abriendo archivo...")
             data = file.read()
-            parts= [data[i:i+100000000 ] for i in range(0, len(data), 100000000 )]
-            #encrypt parts
-            for i in range(0, len(parts)):
-                parts[i] = self._encryptionService.encrypt("server", parts[i], key)[0]
-            #send parts
-            for i in range(0, len(parts)):
-                socket.send(parts[i])
+            print("[STATUS] Archivo abierto.")
 
-
-
-            # bar_encrypt = tqdm(total=len(parts), unit="B", unit_scale=True, unit_divisor=1024)    
-            # #encrypt elements of parts
-            # print("[SERVER] Encriptando archivo...")
-            # for part in tqdm(parts):
-            #     parts[part] = self._encryptionService.encrypt("server", parts[part], key)[0]
-            # print(parts[0])
+            if file_size > 100000000:
+                parts = []
+                for i in range(0, file_size, 100000000):
+                    parts.append(data[i:i+100000000])
+            else:
+                parts = [data]
             
-            # print("[SERVER] Transferiendo archivo...")
-            # for part in tqdm(parts):
-            #     socket.send(part)
+            socket.send(b'listoparaenviar')
+            
+            print("\n[SERVER] Enviando archivo...")
+            for i in tqdm(range(0, len(parts))):
+                part = parts[i]
+                encrypted_part = self._encryptionService.encrypt("server", part, key)[0]
+                encrypted_part_size = str(len(encrypted_part)).encode(self._settings.FORMAT)
+                # socket.send(str(len(encrypted_part_size)).encode(self._settings.FORMAT)) # Con archivos muy grande puede fallar sin esto
+                socket.send(encrypted_part_size)
+                socket.send(encrypted_part)
             print("[SERVER] Archivo enviado.")
         file.close()
 

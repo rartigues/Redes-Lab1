@@ -9,64 +9,53 @@ class RecieveService:
     _encryptionService = EncryptionService()
     _clearService = ClearService()
     _settings = Settings()
-    BUFFER_SIZE = 1024
+    BUFFER_SIZE = 10 * 1024 * 1024
 
     def recieve(self, socket):
-
+        print("[STATUS] Esperando seleccion de archivo...")
         file_name = socket.recv(self.BUFFER_SIZE).decode(self._settings.FORMAT)
         file_size = int(socket.recv(self.BUFFER_SIZE).decode(self._settings.FORMAT))
+        print(f"\n[CLIENT] Se recibira el archivo {file_name} de {file_size} bytes.")
+        encrypted_key = socket.recv(self.BUFFER_SIZE)
 
-        print(f"Se recibira el archivo {file_name} de {file_size} bytes.")
-        self._clearService.clear()
 
-        # Recieve file
-        self._encryptionService.openKeypair("client")
-        key = socket.recv(self.BUFFER_SIZE)
+        while True:
+            staller = socket.recv(self.BUFFER_SIZE)
+            if staller == b'listoparaenviar':
+                break
 
+
+        parts_needed = int(file_size / 100000000)
+        if file_size % 100000000 != 0:
+            parts_needed += 1
+        print(f"[CLIENT] Recibiendo {parts_needed} partes encriptadas del archivo...")
+        parts = []
+        for i in tqdm(range(0, parts_needed)):
+            # encrypted_part_size_size = socket.recv(self.BUFFER_SIZE)
+            # print(encrypted_part_size_size)
+            # encrypted_part_size_size = int(encrypted_part_size_size.decode(self._settings.FORMAT))
+            encrypted_part_size = int(socket.recv(self.BUFFER_SIZE).decode(self._settings.FORMAT))
+            while True:
+                encrypted_part = socket.recv(encrypted_part_size)
+                if encrypted_part_size == len(encrypted_part):
+                    break
+            parts.append(encrypted_part)
+        print("[CLIENT] Partes recibidas.")
+
+
+        print("\n[CLIENT] Desencriptando partes...")
+        decrypted_parts = []
+        for i in tqdm(range(0, len(parts))):
+            decrypted_parts.append(self._encryptionService.decrypt("client", parts[i], encrypted_key))
+        print("[CLIENT] Partes desencriptadas.")
+
+        print("\n[CLIENT] Guardando partes en un archivo...")
         with open(file_name, "wb") as file:
-            file_temp = []
-            # Recieve parts (each part 100MB)
-            for i in range(0, file_size, 100000000):
-                part = socket.recv(self.BUFFER_SIZE)
-                file_temp.append(part)
-            # Decrypt parts
-            for i in range(0, len(file_temp)):
-                file_temp[i] = self._encryptionService.decrypt("client", key, file_temp[i])
-            # Concatenate parts
-            file_temp = b''.join(file_temp)
-            # Write file
-            file.write(file_temp)
-
-
-            
-
-
-            # tqdm_bar = tqdm(total=file_size, unit="B", unit_scale=True, unit_divisor=1024)
-
-            # for i in range(0, file_size, self.BUFFER_SIZE):
-            #     print(i)
-            #     data = socket.recv(self.BUFFER_SIZE)
-            #     tqdm_bar.update(len(data))
-            #     if not data:
-            #         break
-            #     # progressBarr(parts/file_size*100)
-            #     print(data)
-            #     data = self._encryptionService.decrypt("client", key, data)
-            #     file_temp.append(data)
-
-            # print("[CLIENT] Archivo recibido.")
-            # tqdm_bar.close()
-            # if file_size > 2.1*1024*1024*1024:
-            #     print("[CLIENT] El archivo es muy grande para ser enviado!!! **BETA**")
-            #     return
-            #     #data = b''.join(file_temp)
-            #     #file.write(self._encryptionService.largeFileDecrypt("client", key, data))
-            # else:
-            #     file.write(b''.join(file_temp))
+            for i in tqdm(range(0, len(decrypted_parts))):
+                file.write(decrypted_parts[i])
         file_location = os.getcwd()
         shutil.move(file_location+"/"+file_name,file_location+"/download/")
         file.close()
-        print(f"[Estado del Archivo] Archivo creado exitosamente.")
+        print("[CLIENT] Archivo guardado.")
 
-
-
+        print(f"\n[STATUS] Archivo creado exitosamente.")
