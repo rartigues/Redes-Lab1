@@ -38,6 +38,7 @@ python main.py -s
 ```console
 python main.py -r
 ```
+> **Nota:** En Windows la ventana para elegir archivo puede aparecer detras del editor de codigo si es que este se encuentra en pantalla completa.
 
 
 
