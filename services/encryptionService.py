@@ -42,12 +42,14 @@ class EncryptionService:
         )
 
         filename = Path(f"./keys/{prefix}/private.pem")
+        filename.parent.mkdir(parents=True, exist_ok=True)
         filename.touch()
         with open(filename, "wb") as f:
             f.write(private_pem)
         print(f"#Private key creada para {prefix}")
 
         filename = Path(f"./keys/{prefix2}/public.pem")
+        filename.parent.mkdir(parents=True, exist_ok=True)
         filename.touch()
         with open(filename, "wb") as f:
             f.write(public_pem)
@@ -89,6 +91,12 @@ class EncryptionService:
                 )
             return private_key, public_key
         else:
+            if (not public_pem.is_file()):
+                try:
+                    raise "Falta llave publica"
+                except:
+                    print("Falta llave publica")
+                    raise
             return self.createKeypair(prefix)
 
     def encrypt(self, prefix, data, key = None, onlyKey = False):

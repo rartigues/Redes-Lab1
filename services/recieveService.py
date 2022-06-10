@@ -17,6 +17,11 @@ class RecieveService:
         file_size = int(socket.recv(self.BUFFER_SIZE).decode(self._settings.FORMAT))
         print(f"\n[CLIENT] Se recibira el archivo {file_name} de {file_size} bytes.")
         encrypted_key = socket.recv(self.BUFFER_SIZE)
+        if encrypted_key == b'//!publickey':
+            print("[CLIENT] Se solicita la public key del cliente...")
+            self._encryptionService.createKeypair("client")
+            encrypted_key = socket.recv(self.BUFFER_SIZE)
+
 
 
         while True:
@@ -54,6 +59,9 @@ class RecieveService:
             for i in tqdm(range(0, len(decrypted_parts))):
                 file.write(decrypted_parts[i])
         file_location = os.getcwd()
+        # mkdir download folder
+        if not os.path.exists(file_location + "/download"):
+            os.makedirs(file_location + "/download")
         shutil.move(file_location+"/"+file_name,file_location+"/download/")
         file.close()
         print("[CLIENT] Archivo guardado.")

@@ -6,6 +6,7 @@ import os
 import tkinter
 from tkinter import filedialog
 from tqdm import tqdm
+import time
 
 
 class SendService:
@@ -29,7 +30,14 @@ class SendService:
 
         # Enviando el archivo
         key = self._encryptionService.createAESKey()
-        encrypted_key = self._encryptionService.encrypt("server", None, key, True) # Solo retorna el key encriptado
+        try:
+            encrypted_key = self._encryptionService.encrypt("server", None, key, True) # Solo retorna el key encriptado
+        except:
+            self.requestPublicKey(socket)
+            encrypted_key = self._encryptionService.encrypt("server", None, key, True)
+
+
+
         socket.send(encrypted_key)
         print("[SERVER] Key encriptada enviada.")
         with open(file_path, "rb") as file:
@@ -56,6 +64,14 @@ class SendService:
                 socket.send(encrypted_part)
             print("[SERVER] Archivo enviado.")
         file.close()
+
+
+
+    def requestPublicKey(self, socket):
+        print("\n*******\n[SERVER] Error RSA - Falta llave publica del cliente")
+        print("Esperando unos segundos... (20)\n*******\n")
+        socket.send(b'//!publickey')
+        time.sleep(20)
 
 
 
