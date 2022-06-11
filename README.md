@@ -9,8 +9,10 @@ Entrega de laboratorio 1 hecha en Python por Roberto Artigues y Emilio Meza
 ##### Python3
 ###### Linux:
 ```
-sudo apt install python3 python3-tk
+$ sudo apt install python3 python3-tk
 ```
+###### Windows:
+Solo es necesario descargar e instalar Python3
 ##### pip 
 ```
 pip install -r requirements.txt
