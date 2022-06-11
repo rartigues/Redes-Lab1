@@ -11,7 +11,8 @@ Entrega de laboratorio 1 hecha en Python por Roberto Artigues y Emilio Meza
 ```
 $ sudo apt install python3 python3-tk
 ```
-> En Windows solo instalar Python3
+###### Windows:
+> Instalar Python3
 
 ##### pip 
 ```
