@@ -7,6 +7,7 @@ Entrega de laboratorio 1 hecha en Python por Roberto Artigues y Emilio Meza
 
 ### Requerimientos
 ##### Python3
+######### Linux:
 ```
 sudo apt install python3 python3-tk
 ```
